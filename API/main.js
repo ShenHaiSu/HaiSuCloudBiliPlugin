@@ -16,14 +16,9 @@ router.get("/coreInfo", (req, res, next) => {
 
 // 切换直播状态
 router.get("/statusToggle", async (req, res, next) => {
-  let result = await liveStatusToggle();
-  if (result.err) {
-    res.status(500);
-    res.send({err: true, message: result.message, liveStatus: liveInformation.status});
-  } else {
-    res.status(200);
-    res.send({err: false, message: "切换直播监听状态成功。", liveStatus: liveInformation.status});
-  }
+  liveStatusToggle();
+  res.status(200);
+  res.send({err: false, message: "已尝试切换直播流捕获状态。", liveStatus: liveInformation.status});
 });
 
 // 加班插件
