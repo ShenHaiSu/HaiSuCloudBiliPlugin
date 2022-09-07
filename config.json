@@ -1,0 +1,10 @@
+{
+  "ServerPort": 10293,
+  "BiliRoomID": 0,
+  "HeartBeatDelaySecond": 45,
+  "HeartBeatContent": "[object Object]",
+  "WhiteIPList": [
+    "::ffff:127.0.0.1",
+    "::1"
+  ]
+}

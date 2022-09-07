@@ -1,0 +1,2 @@
+"use strict";(self["webpackChunkbili_overtime_work_frontend"]=self["webpackChunkbili_overtime_work_frontend"]||[]).push([[543],{3543:function(e,n,r){r.r(n),r.d(n,{default:function(){return a}});var t=function(){var e=this,n=e._self._c;return n("b-container",[n("router-view")],1)},i=[],u={name:"OBSView"},o=u,l=r(1001),f=(0,l.Z)(o,t,i,!1,null,"b8e9d8a0",null),a=f.exports}}]);
+//# sourceMappingURL=543.dd7e8e16.js.map
