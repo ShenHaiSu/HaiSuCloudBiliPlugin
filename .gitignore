@@ -4,6 +4,7 @@ DevFiles/
 log/*.log
 liveMessageLog/*.log
 *.temp.json
+*.temp.js
 
 # Logs
 logs

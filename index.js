@@ -40,8 +40,14 @@ app.use((req, res, next) => {
   }
 });
 
-// 静态资源挂载
+// 挂载网页主目录
 app.use("/", express.static("./page"));
+
+// 挂载分支路由
+app.use("/API", require("./API/main").router);
+
+// 挂载静态资源
+app.use("/assets/giftImg", express.static("./assets/LiveGiftImg"));
 
 // 测试链接
 app.get("/test:payload", (req, res) => {
@@ -57,7 +63,7 @@ app.get("/test:payload", (req, res) => {
 });
 
 // 重启核心
-app.get("/restartCore",(req,res,next) => {
+app.get("/restartCore", (req, res, next) => {
   // 返回1错误码 会自动重启
   res.status(200);
   res.send("收到重启请求，请刷新网页。");
@@ -66,7 +72,7 @@ app.get("/restartCore",(req,res,next) => {
 });
 
 // 关闭核心
-app.get("/exitCore",(req,res,next) => {
+app.get("/exitCore", (req, res, next) => {
   // 返回0 关闭运行
   res.status(200);
   res.send("即将关闭核心，感谢您的使用。");
@@ -74,7 +80,6 @@ app.get("/exitCore",(req,res,next) => {
   return process.exit(0);
 });
 
-app.use("/API", require("./API/main").router);
 
 app.ws("/WSLink", WebSocketHandle);
 

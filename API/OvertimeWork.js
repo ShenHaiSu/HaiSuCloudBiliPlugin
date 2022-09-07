@@ -63,10 +63,18 @@ router.post("/updateModList", (req, res, next) => {
     return opcode.includes(item['type']);
   });
   if (data.length < 1) return next(new Error("传入数据均不合规"));
-  // 数字取整
+  // 内容修改和赋予
   data = data.map(item => {
+    // 数字取整
     item['count'] = Math.floor(item['count']);
     item['timeChange'] = Math.floor(item['timeChange']);
+    // 赋予图标地址
+    item['img'] = null;
+    for (let i = 0; i < pluginConfig.giftName2Img.length; i++) {
+      if (pluginConfig.giftName2Img[i].giftName !== item['giftName']) continue;
+      item['img'] = pluginConfig.giftName2Img[i].imgURL;
+    }
+    // 返回内容
     return item;
   })
   // 其他流程
