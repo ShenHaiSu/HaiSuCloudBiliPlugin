@@ -44,7 +44,7 @@ function liveStatusToggle() {
       });
   } else {
     liveInformation.status = false;
-    return biliLiveDamu.closeConnect();
+    return {err: !biliLiveDamu.closeConnect()};
   }
 }
 
