@@ -5,33 +5,16 @@ const {saveDataFile, getDataFile} = require("../tools/toolFunc");
 const LOG = require("../tools/logFuncs");
 const {Event, Event2Web} = require("../tools/eventControl");
 const dataFileList = ["OvertimeWork.temp.json", "OvertimeWork.json"];
-const opcode = ["add", "reduce", "multi", "division", "power"];
+const opcode = ["add", "reduce", "multi", "division", "power","clear"];
 let tempInfo = {
   intervalFlag: 0,
-  currentWorkTime: 7174,
-  modList: [
-    {
-      giftName: "礼物名字",
-      count: 1,
-      timeChange: 1,
-      type: ""
-    }
-  ],
-  tempGiftList: [
-    {
-      giftName: "礼物名字",
-      count: 1
-    }
-  ]
+  currentWorkTime: 0,
+  modList: [],
+  tempGiftList: []
 };
 
 (() => {
   // 启动项目
-  tempInfo = {
-    currentWorkTime: pluginConfig.defaultWorkTime,
-    modList: [],
-    tempGiftList: []
-  };
   tempInfo = getDataFile("OvertimeWork.temp.json", tempInfo);
   tempInfo.intervalFlag = 0;
 })()
@@ -195,6 +178,9 @@ function timeModHandle(modItemIndex, tempItemIndex) {
       break;
     case "power":
       tempInfo.currentWorkTime = Math.pow(tempInfo.currentWorkTime, modItem.timeChange);
+      break;
+    case "clear":
+      tempInfo.currentWorkTime = pluginConfig.defaultWorkTime;
       break;
   }
   tempInfo.currentWorkTime = Math.floor(tempInfo.currentWorkTime);
