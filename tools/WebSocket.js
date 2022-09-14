@@ -15,6 +15,7 @@ function WebSocketHandle(sock) {
     // 本次链接断开，删除事件监听
     Event2Web.removeListener("OvertimeWork-changeTime", overtimeWork_changeTime);
     Event2Web.removeListener("OvertimeWork-changeModList", overtimeWork_changeModList);
+    Event2Web.removeListener("OvertimeWork-freshPage", overtimeWork_freshPage);
     Event.removeListener("StreamStart", StreamStartHandle);
     Event.removeListener("StreamEnd", StreamEndHandle);
     LOG.infoLog("网页链接断开");
@@ -47,6 +48,15 @@ function WebSocketHandle(sock) {
     sock.send(JSON.stringify({type: "OvertimeWork-changeModList", data}));
   }
 
+
+  // 加班插件 - 强制刷新事件
+  Event2Web.on("OvertimeWork-freshPage", overtimeWork_freshPage);
+
+  function overtimeWork_freshPage() {
+    sock.send(JSON.stringify({type: "overtimeWork_freshPage"}));
+  }
+
+  // debug使用 每一秒钟都发一次ws信息
   // setInterval(() => {
   //   sock.send(JSON.stringify({type:"test",test:"test内容"}));
   // },1000);

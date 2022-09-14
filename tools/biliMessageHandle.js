@@ -46,6 +46,15 @@ function livePrepareHandle(input) {
   return true;
 }
 
+// 直播间人气红包开始
+function redPocketStartHandle(input) {
+  let message = `[ 人气红包 ] ${input.data['sender_name']} 发出了一个人气红包，
+  弹幕内容：‘${input.data['danmu']}’
+  持续时间${input.data['end_time'] - input.data['start_time']}秒，
+  总价值${input.data['total_price']}`;
+  LOG.liveMessageLog(message);
+  Event.emit("Live-RedPocketStart", input, message);
+}
 
 module.exports = {
   danmuHandle,
@@ -53,5 +62,6 @@ module.exports = {
   entryHandle,
   newSubscribeHandle,
   livePrepareHandle,
-  guardBuyHandle
+  guardBuyHandle,
+  redPocketStartHandle
 };

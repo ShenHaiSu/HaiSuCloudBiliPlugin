@@ -5,6 +5,7 @@ log/*.log
 liveMessageLog/*.log
 *.temp.json
 *.temp.js
+data/TempFiles/*
 
 # Logs
 logs

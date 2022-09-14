@@ -148,8 +148,11 @@ function handleSinglePackage(input) {
     case "GUARD_BUY":
       Handles.guardBuyHandle(input);
       break;
+    case "POPULARITY_RED_POCKET_START":
+      Handles.redPocketStartHandle(input);
+      break;
     default:
-      console.log("捕获未处理类型消息 - " + input.cmd);
+      console.log(`[ 无配信息 ] 类型：${input.cmd}`);
   }
 }
 

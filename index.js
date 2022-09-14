@@ -5,6 +5,7 @@ const LOG = require("./tools/logFuncs");
 const {WebSocketHandle} = require("./tools/WebSocket");
 const NodeCmd = require("node-cmd");
 const {exitCoreRoutine} = require("./tools/exitCoreRoutine");
+const {startCoreRoutine} = require("./tools/startCoreRoutine");
 const app = express();
 expressWs(app);
 let appConfig = {
@@ -25,6 +26,8 @@ let appConfig = {
   }
   app.listen(appConfig.ServerPort, () => {
     LOG.infoLog("服务器正常启动了。");
+    startCoreRoutine();
+    LOG.infoLog("开启项目已执行");
   });
   NodeCmd.runSync("title 海粟云直播插件核心");
 })()

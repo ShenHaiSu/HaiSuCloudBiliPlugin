@@ -1,17 +1,33 @@
+// /API/overtimeWork
+const fsP = require("fs/promises");
 const express = require("express");
+const Multer = require("multer");
 const router = express.Router();
 const pluginConfig = require("../data/OvertimeWork.json");
 const {saveDataFile, getDataFile} = require("../tools/toolFunc");
 const LOG = require("../tools/logFuncs");
 const {Event, Event2Web} = require("../tools/eventControl");
 const dataFileList = ["OvertimeWork.temp.json", "OvertimeWork.json"];
-const opcode = ["add", "reduce", "multi", "division", "power","clear"];
+const opcode = ["add", "reduce", "multi", "division", "power", "clear"];
 let tempInfo = {
   intervalFlag: 0,
   currentWorkTime: 0,
   modList: [],
   tempGiftList: []
 };
+
+// 配置Multer存储到硬盘
+const storage = Multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './data/TempFiles')
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' + Date.now());
+    return file.fieldname
+  }
+});
+const upload = Multer({storage});
+
 
 (() => {
   // 启动项目
@@ -21,6 +37,9 @@ let tempInfo = {
 
 // 挂载中间件
 router.use(express.json());
+
+// 挂载组件自身的静态资源
+router.use("/assets", express.static("./assets/overtimeWork"));
 
 // 获取基础信息
 router.get("/getInfo", (req, res, next) => {
@@ -89,6 +108,51 @@ router.post("/fastMod", (req, res, next) => {
   res.send("完成修改");
 });
 
+// 更新背景图片
+const UploadFiles = upload.fields([
+  {name: "file", maxCount: 1}
+])
+router.post("/updateBackImage", UploadFiles, (req, res, next) => {
+  // 初始化
+  let fileObj = req.files['file'][0];
+  let fileTempFullName = fileObj.destination + "\\" + fileObj.filename;
+  let fileName = req.body['fileName'];
+
+  // 将文件转存在assert内部
+  fsP.access(fileTempFullName)
+    .catch(() => Promise.reject(new Error("核心内部出现错误，请联系开发者。")))
+    .then(() => fsP.copyFile(fileTempFullName, `./assets/overtimeWork/${fileName}`))
+    .then(() => {
+      // 通知更新前端画面
+      Event2Web.emit("OvertimeWork-freshPage");
+      res.status(200);
+      res.send({message: "服务器已更新背景图片，如果网页样式没有变化可以尝试刷新页面"});
+    })
+    .catch(error => {
+      // 复制文件出现错误
+      return next(error);
+    })
+});
+
+// 删除背景图片
+router.post("/clearBackImage", (req, res, next) => {
+  // 初始化
+  let file2delete = "./assets/overtimeWork/";
+  file2delete += req.body['target'] === "top" ? "background-top.png" : "background-bottom.png";
+
+  // 开始删除文件
+  fsP.access(file2delete)
+    .catch(() => Promise.reject("文件已删除"))
+    .then(() => fsP.rm(file2delete))
+    .catch(() => Promise.resolve())
+    .then(() => {
+      // 通知更新前端画面
+      Event2Web.emit("OvertimeWork-freshPage");
+      res.status(200);
+      res.send("操作完成");
+    })
+});
+
 // 直播开始
 Event.on("StreamStart", () => {
   tempInfo.intervalFlag = setInterval(() => {
@@ -111,18 +175,8 @@ Event.on("Live-Gift", (input, message) => {
   let modItemIndex = tempInfo.modList.findIndex(item => item['giftName'] === input.data['giftName']);
   if (modItemIndex === -1) return; // 不属于加班道具
   // 更新缓存区数据
-  let tempItemIndex = tempInfo.tempGiftList.findIndex(item => item['giftName'] === input.data['giftName']);
-  if (tempItemIndex === -1) {
-    // 缓存区没见过这个礼物
-    tempInfo.tempGiftList.push({
-      "giftName": input.data['giftName'],
-      "count": input.data['num']
-    });
-    tempItemIndex = tempInfo.tempGiftList.length - 1;
-  } else {
-    // 缓存区见过这个礼物
-    tempInfo.tempGiftList[tempItemIndex].count += input.data['num'];
-  }
+  let tempItemIndex = updateTempGiftCount(input,
+    tempInfo.tempGiftList.findIndex(item => item['giftName'] === input.data['giftName']));
   // 处理时间变动
   timeModHandle(modItemIndex, tempItemIndex);
   // 保存配置
@@ -135,11 +189,38 @@ Event.on("Live-GuardBuy", (input, message) => {
   let modItemIndex = tempInfo.modList.findIndex(item => item['giftName'] === input.data['gift_name']);
   if (modItemIndex === -1) return; // 不属于加班道具
   // 更新缓存区数据
-  let tempItemIndex = tempInfo.tempGiftList.findIndex(item => item['giftName'] === input.data['gift_name']);
+  let tempItemIndex = updateTempGiftCount(input,
+    tempInfo.tempGiftList.findIndex(item => item['giftName'] === input.data['gift_name']));
+  // 处理时间变动
+  timeModHandle(modItemIndex, tempItemIndex);
+  // 保存配置
+  saveDataFile(dataFileList[0], {...tempInfo, intervalFlag: null});
+});
+
+// 人气红包开始
+Event.on("Live-RedPocketStart", (input, message) => {
+  // 查询是否在修改时间列表
+  let modItemIndex = tempInfo.modList.findIndex(item => item['giftName'] === "发红包");
+  if (modItemIndex === -1) return; // 不属于加班道具
+  // 更新缓存区数据
+  let tempItemIndex = updateTempGiftCount({
+    data: {
+      giftName: "发红包",
+      num: 1
+    }
+  }, tempInfo.tempGiftList.findIndex(item => item['giftName'] === "发红包"));
+  // 处理时间变动
+  timeModHandle(modItemIndex, tempItemIndex);
+  // 保存配置
+  saveDataFile(dataFileList[0], {...tempInfo, intervalFlag: null});
+});
+
+// 更新缓存区数据
+function updateTempGiftCount(input, tempItemIndex) {
   if (tempItemIndex === -1) {
     // 缓存区没见过这个礼物
     tempInfo.tempGiftList.push({
-      "giftName": input.data['gift_name'],
+      "giftName": input.data['giftName'] || input.data['gift_name'],
       "count": input.data['num']
     });
     tempItemIndex = tempInfo.tempGiftList.length - 1;
@@ -147,11 +228,8 @@ Event.on("Live-GuardBuy", (input, message) => {
     // 缓存区见过这个礼物
     tempInfo.tempGiftList[tempItemIndex].count += input.data['num'];
   }
-  // 处理时间变动
-  timeModHandle(modItemIndex, tempItemIndex);
-  // 保存配置
-  saveDataFile(dataFileList[0], {...tempInfo, intervalFlag: null});
-});
+  return tempItemIndex;
+}
 
 // 处理时间变动
 function timeModHandle(modItemIndex, tempItemIndex) {
