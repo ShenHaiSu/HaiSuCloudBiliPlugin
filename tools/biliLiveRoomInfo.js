@@ -20,7 +20,7 @@ let sock = null;
 
 function getWebSocketURL() {
   return axios({
-    url: danmuConfig.getInfoStreamURL + "id=" + danmuConfig.RoomID,
+    url: danmuConfig.getInfoStreamURL + "id=" + danmuConfig.RoomID + "&type=0",
     method: "get",
   }).then(axiosRes => {
     // 错误排查
@@ -69,7 +69,13 @@ function sockOpened() {
   sock.on("open", () => {
     LOG.infoLog(`WS已建立通道。等待鉴权。`);
     // 发送鉴权
-    let AuthPack = {roomid: danmuConfig.RoomID};
+    let AuthPack = {
+      uid:0,
+      platform:"web",
+      type:2,
+      roomid: danmuConfig.RoomID,
+      // key:danmuConfig.wsToken
+    };
     sock.send(Tools.getHeader(AuthPack) + JSON.stringify(AuthPack));
     // 循环发送心跳包
     danmuConfig.HeartBeatInterval = setInterval(() => {
