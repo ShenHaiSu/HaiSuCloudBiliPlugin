@@ -15,7 +15,7 @@
     "express-ws": "^5.0.2",
     "multer": "^2.0.2",
     "node-cmd": "^5.0.0",
-    "ws": "^8.8.1"
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/node": "^18.7.14"
