@@ -10,14 +10,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.16.0",
-    "express": "^4.22.2",
+    "axios": "^1.20.0",
+    "express": "^5.2.1",
     "express-ws": "^5.0.2",
-    "multer": "^2.1.1",
+    "multer": "^2.3.0",
     "node-cmd": "^5.0.0",
-    "ws": "^8.21.0"
+    "ws": "^8.21.3"
   },
   "devDependencies": {
-    "@types/node": "^18.7.14"
+    "@types/node": "^24.0.0"
   }
 }
